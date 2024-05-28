@@ -1,6 +1,6 @@
-Bishop: 2341
-King: 124908
-Queen: 751503
-Knight: 952
+Bishop: 1442
+King: 53092
+Queen: 359276
+Knight: 544
 Pawn: 0
-Rook: 49326
+Rook: 23302
