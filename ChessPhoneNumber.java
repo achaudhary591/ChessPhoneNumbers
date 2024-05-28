@@ -20,6 +20,7 @@ class ChessPhoneNumbers {
     // Knight class
     static class Knight extends ChessPiece {
         @Override
+        @Override
         public List<int[]> getPossibleMoves(int x, int y) {
             List<int[]> moves = new ArrayList<>();
             moves.add(new int[]{x + 2, y + 1});
@@ -60,6 +61,11 @@ class ChessPhoneNumbers {
             }
             for (int i = 0; i < 3; i++) {
                 if (i != y) moves.add(new int[]{x, i});
+            for (int i = 0; i < 4; i++) {
+                if (i != x) moves.add(new int[]{i, y});
+            }
+            for (int i = 0; i < 3; i++) {
+                if (i != y) moves.add(new int[]{x, i});
             }
             return filterValidMoves(moves);
         }
@@ -69,6 +75,11 @@ class ChessPhoneNumbers {
         @Override
         public List<int[]> getPossibleMoves(int x, int y) {
             List<int[]> moves = new ArrayList<>();
+            for (int i = 1; i < 4; i++) {
+                if (x + i < 4 && y + i < 3) moves.add(new int[]{x + i, y + i});
+                if (x + i < 4 && y - i >= 0) moves.add(new int[]{x + i, y - i});
+                if (x - i >= 0 && y + i < 3) moves.add(new int[]{x - i, y + i});
+                if (x - i >= 0 && y - i >= 0) moves.add(new int[]{x - i, y - i});
             for (int i = 1; i < 4; i++) {
                 if (x + i < 4 && y + i < 3) moves.add(new int[]{x + i, y + i});
                 if (x + i < 4 && y - i >= 0) moves.add(new int[]{x + i, y - i});
@@ -95,6 +106,17 @@ class ChessPhoneNumbers {
                 if (x + i < 4 && y - i >= 0) moves.add(new int[]{x + i, y - i});
                 if (x - i >= 0 && y + i < 3) moves.add(new int[]{x - i, y + i});
                 if (x - i >= 0 && y - i >= 0) moves.add(new int[]{x - i, y - i});
+            for (int i = 0; i < 4; i++) {
+                if (i != x) moves.add(new int[]{i, y});
+            }
+            for (int i = 0; i < 3; i++) {
+                if (i != y) moves.add(new int[]{x, i});
+            }
+            for (int i = 1; i < 4; i++) {
+                if (x + i < 4 && y + i < 3) moves.add(new int[]{x + i, y + i});
+                if (x + i < 4 && y - i >= 0) moves.add(new int[]{x + i, y - i});
+                if (x - i >= 0 && y + i < 3) moves.add(new int[]{x - i, y + i});
+                if (x - i >= 0 && y - i >= 0) moves.add(new int[]{x - i, y - i});
             }
             return filterValidMoves(moves);
         }
@@ -105,6 +127,7 @@ class ChessPhoneNumbers {
         public List<int[]> getPossibleMoves(int x, int y) {
             List<int[]> moves = new ArrayList<>();
             moves.add(new int[]{x - 1, y});
+            if (x == 3) {
             if (x == 3) {
                 moves.add(new int[]{x - 2, y});
             }
@@ -130,6 +153,7 @@ class ChessPhoneNumbers {
         int count = 0;
         for (int i = 0; i < keypad.length; i++) {
             for (int j = 0; j < keypad[i].length; j++) {
+                if (keypad[i][j] != -1 && keypad[i][j] != 0 && keypad[i][j] != 1) {
                 if (keypad[i][j] != -1 && keypad[i][j] != 0 && keypad[i][j] != 1) {
                     count += generateNumbersHelper(piece, i, j, length - 1);
                 }
