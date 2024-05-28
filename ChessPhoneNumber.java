@@ -99,7 +99,7 @@ class ChessPhoneNumbers {
             // Assuming pawn moves forward only (not capturing other pieces)
             moves.add(new int[]{x - 1, y});
             // Optionally, add initial two-step move for pawns in the second row.
-            if (x == 6) {
+            if (x == 2) {
                 moves.add(new int[]{x - 2, y});
             }
             return filterValidMoves(moves);
