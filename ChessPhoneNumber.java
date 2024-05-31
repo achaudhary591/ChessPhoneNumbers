@@ -1,181 +1,134 @@
+/*
+Problem
+The following diagram is of a standard telephone keypad. It consists of a 4x3 grid of buttons. Using the valid
+moves of a piece from the game of chess, varying combinations of 7-digit phone numbers can be derived. For
+example, starting in the upper-right corner (the "3" key) using a rook (which moves any number of spaces
+horizontally or vertically), one valid number, after pressing the initial "3" key, is: 314-5289.
+1 2 3
+4 5 6
+7 8 9
+* 0 #
+Write a program that will count the number of valid 7-digit phone numbers that can be traced out on the
+keypad for every given chess piece. The following rules define a valid phone number:
+•
+Seven digits in length
+Cannot start with a 0 or 1
+Cannot contain a * or #
+ */
+
+import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.*;
 
-class ChessPhoneNumbers {
-    private static final int[][] keypad = {
-            {1, 2, 3},
-            {4, 5, 6},
-            {7, 8, 9},
-            {-1, 0, -1}
-    };
+@SuppressWarnings("unchecked")
+public class ChessPhoneNumber {
 
-    // Abstract ChessPiece class
-    abstract static class ChessPiece {
-        abstract List<int[]> getPossibleMoves(int x, int y);
+    enum ChessPiece {
+        Pawn, Knight, Bishop, Rook, Queen, King
     }
 
-    // Knight class
-    static class Knight extends ChessPiece {
-        @Override
-        public List<int[]> getPossibleMoves(int x, int y) {
-            List<int[]> moves = new ArrayList<>();
-            moves.add(new int[]{x + 2, y + 1});
-            moves.add(new int[]{x + 2, y - 1});
-            moves.add(new int[]{x - 2, y + 1});
-            moves.add(new int[]{x - 2, y - 1});
-            moves.add(new int[]{x + 1, y + 2});
-            moves.add(new int[]{x + 1, y - 2});
-            moves.add(new int[]{x - 1, y + 2});
-            moves.add(new int[]{x - 1, y - 2});
-            return filterValidMoves(moves);
+    private static final Map<ChessPiece, List<Integer>[]> chessPiecesMoveMap = new HashMap<>();
+
+    static {
+        chessPiecesMoveMap.put(ChessPiece.Pawn,
+                new List[] { Arrays.asList(), Arrays.asList(4, 7), Arrays.asList(5, 8), Arrays.asList(6, 9),
+                        Arrays.asList(7), Arrays.asList(8), Arrays.asList(9), Arrays.asList(), Arrays.asList(0),
+                        Arrays.asList() });
+        chessPiecesMoveMap.put(ChessPiece.Knight,
+                new List[] { Arrays.asList(4, 6), Arrays.asList(6, 8), Arrays.asList(7, 9), Arrays.asList(4, 8),
+                        Arrays.asList(0, 3, 9), Arrays.asList(), Arrays.asList(0, 1, 7), Arrays.asList(2, 6),
+                        Arrays.asList(1, 3), Arrays.asList(2, 4) });
+        chessPiecesMoveMap.put(ChessPiece.Bishop,
+                new List[] { Arrays.asList(7, 9), Arrays.asList(5, 9), Arrays.asList(4, 6), Arrays.asList(5, 7),
+                        Arrays.asList(2, 8), Arrays.asList(1, 3, 7, 9), Arrays.asList(2, 8), Arrays.asList(0, 3, 5),
+                        Arrays.asList(4, 6), Arrays.asList(0, 1, 5) });
+        chessPiecesMoveMap.put(ChessPiece.Rook,
+                new List[] { Arrays.asList(2, 5, 8), Arrays.asList(2, 3, 4, 7), Arrays.asList(0, 1, 3, 5, 8),
+                        Arrays.asList(1, 2, 6, 9), Arrays.asList(1, 5, 6, 7), Arrays.asList(0, 2, 4, 6, 8),
+                        Arrays.asList(3, 4, 5, 9), Arrays.asList(1, 4, 8, 9), Arrays.asList(0, 2, 5, 7, 9),
+                        Arrays.asList(3, 6, 7, 8) });
+        chessPiecesMoveMap.put(ChessPiece.Queen,
+                new List[] { Arrays.asList(2, 5, 7, 8, 9), Arrays.asList(2, 3, 4, 5, 7, 9),
+                        Arrays.asList(0, 1, 3, 4, 5, 6, 8), Arrays.asList(1, 2, 5, 6, 7, 9),
+                        Arrays.asList(1, 2, 5, 6, 7, 8), Arrays.asList(0, 1, 2, 3, 4, 6, 7, 8, 9),
+                        Arrays.asList(2, 3, 4, 5, 8, 9), Arrays.asList(0, 1, 3, 4, 5, 8, 9),
+                        Arrays.asList(0, 2, 4, 5, 6, 7, 9), Arrays.asList(0, 1, 3, 5, 6, 7, 8) });
+        chessPiecesMoveMap.put(ChessPiece.King,
+                new List[] { Arrays.asList(7, 8, 9), Arrays.asList(2, 4, 5), Arrays.asList(1, 3, 4, 5, 6),
+                        Arrays.asList(2, 5, 6), Arrays.asList(1, 2, 5, 7, 8), Arrays.asList(1, 2, 3, 4, 6, 7, 8, 9),
+                        Arrays.asList(2, 3, 5, 8, 9), Arrays.asList(0, 4, 5, 8), Arrays.asList(0, 4, 5, 6, 7, 9),
+                        Arrays.asList(0, 5, 6, 8) });
+    }
+
+    public static BigInteger[] countPhoneNumbers(List<Integer>[] pieceMOves, int numberLength) {
+        if (numberLength < 1) {
+            throw new IllegalArgumentException("Number length must be at least 1");
         }
-    }
 
-    // King class
-    static class King extends ChessPiece {
-        @Override
-        public List<int[]> getPossibleMoves(int x, int y) {
-            List<int[]> moves = new ArrayList<>();
-            moves.add(new int[]{x + 1, y});
-            moves.add(new int[]{x - 1, y});
-            moves.add(new int[]{x, y + 1});
-            moves.add(new int[]{x, y - 1});
-            moves.add(new int[]{x + 1, y + 1});
-            moves.add(new int[]{x + 1, y - 1});
-            moves.add(new int[]{x - 1, y + 1});
-            moves.add(new int[]{x - 1, y - 1});
-            return filterValidMoves(moves);
+        BigInteger[][] result = new BigInteger[2][10];
+        int currentIndex = 0;
+        int previousIndex = 1;
+
+        // Initialize with ZERO for all digits
+        Arrays.fill(result[currentIndex], BigInteger.ZERO);
+
+        // Set valid starting positions (digits 2-9) to ONE
+        for (int i = 2; i <= 9; i++) {
+            result[currentIndex][i] = BigInteger.ONE;
         }
-    }
 
-    static class Rook extends ChessPiece {
-        @Override
-        public List<int[]> getPossibleMoves(int x, int y) {
-            List<int[]> moves = new ArrayList<>();
-            for (int i = 0; i < 4; i++) {
-                if (i != x) moves.add(new int[]{i, y});
-            }
-            for (int i = 0; i < 3; i++) {
-                if (i != y) moves.add(new int[]{x, i});
-            }
-            return filterValidMoves(moves);
-        }
-    }
-
-    static class Bishop extends ChessPiece {
-        @Override
-        public List<int[]> getPossibleMoves(int x, int y) {
-            List<int[]> moves = new ArrayList<>();
-            for (int i = 1; i < 4; i++) {
-                if (x + i < 4 && y + i < 3) moves.add(new int[]{x + i, y + i});
-                if (x + i < 4 && y - i >= 0) moves.add(new int[]{x + i, y - i});
-                if (x - i >= 0 && y + i < 3) moves.add(new int[]{x - i, y + i});
-                if (x - i >= 0 && y - i >= 0) moves.add(new int[]{x - i, y - i});
-            }
-            return filterValidMoves(moves);
-        }
-    }
-
-    static class Queen extends ChessPiece {
-        @Override
-        public List<int[]> getPossibleMoves(int x, int y) {
-            List<int[]> moves = new ArrayList<>();
-            // Combining Rook and Bishop moves
-            for (int i = 0; i < 4; i++) {
-                if (i != x) moves.add(new int[]{i, y});
-            }
-            for (int i = 0; i < 3; i++) {
-                if (i != y) moves.add(new int[]{x, i});
-            }
-            for (int i = 1; i < 4; i++) {
-                if (x + i < 4 && y + i < 3) moves.add(new int[]{x + i, y + i});
-                if (x + i < 4 && y - i >= 0) moves.add(new int[]{x + i, y - i});
-                if (x - i >= 0 && y + i < 3) moves.add(new int[]{x - i, y + i});
-                if (x - i >= 0 && y - i >= 0) moves.add(new int[]{x - i, y - i});
-            }
-            return filterValidMoves(moves);
-        }
-    }
-
-    static class Pawn extends ChessPiece {
-        @Override
-        public List<int[]> getPossibleMoves(int x, int y) {
-            List<int[]> moves = new ArrayList<>();
-            moves.add(new int[]{x - 1, y});
-            if (x >= 2) {
-                moves.add(new int[]{x - 2, y});
-            }
-            return filterValidMoves(moves);
-        }
-    }
-
-    private static List<int[]> filterValidMoves(List<int[]> moves) {
-        List<int[]> validMoves = new ArrayList<>();
-        for (int[] move : moves) {
-            if (isValidMove(move[0], move[1])) {
-                validMoves.add(new int[]{move[0], move[1]});
-            }
-        }
-        return validMoves;
-    }
-
-    private static boolean isValidMove(int x, int y) {
-        return x >= 0 && x < 4 && y >= 0 && y < 3 && keypad[x][y] != -1;
-    }
-
-    public static int generateNumbers(ChessPiece piece, int length) {
-        int count = 0;
-        for (int i = 0; i < keypad.length; i++) {
-            for (int j = 0; j < keypad[i].length; j++) {
-                if (keypad[i][j] != -1 && keypad[i][j] != 0 && keypad[i][j] != 1) {
-                    count += generateNumbersHelper(piece, i, j, length - 1);
-                }
-            }
-        }
-        return count;
-    }
-
-    private static int generateNumbersHelper(ChessPiece piece, int x, int y, int remainingDigits) {
-        if (remainingDigits == 0) {
-            return 1;
-        }
-        int count = 0;
-        List<int[]> moves = piece.getPossibleMoves(x, y);
-        for (int[] move : moves) {
-            count += generateNumbersHelper(piece, move[0], move[1], remainingDigits - 1);
-        }
-        return count;
-    }
-
-    public static void main(String[] args) {
-        Map<String, ChessPiece> pieces = new HashMap<>();
-        pieces.put("Knight", new Knight());
-        pieces.put("King", new King());
-        pieces.put("Bishop", new Bishop());
-        pieces.put("Pawn", new Pawn());
-        pieces.put("Queen", new Queen());
-        pieces.put("Rook", new Rook());
-
-        StringBuilder output = new StringBuilder();
-        pieces.forEach((name, piece) -> {
-            int count = 0;
-            for (int i = 2; i < keypad.length; i++) {
-                for (int j = 0; j < keypad[i].length; j++) {
-                    if (keypad[i][j] != -1) {
-                        count += generateNumbersHelper(piece, i, j, 6);
+        for (int iteration = 1; iteration < numberLength; iteration++) {
+            currentIndex = iteration % 2;
+            previousIndex = 1 - currentIndex;
+            Arrays.fill(result[currentIndex], BigInteger.ZERO);
+            for (int p = 2; p <= 9; p++) { // Start from 2, since 0 and 1 are not valid starting digits
+                for (Integer next : pieceMOves[p]) {
+                    if (next >= 2 && next <= 9) { // Ensure next is a valid digit
+                        result[currentIndex][next] = result[currentIndex][next].add(result[previousIndex][p]);
                     }
                 }
             }
-            output.append(name).append(": ").append(count).append("\n");
-        });
+        }
 
-        // Print to console
-        System.out.print(output);
+        return result[previousIndex];
+    }
 
-        // Write to a text file
+    public static void main(String[] args) {
+
+        HashMap<String, ChessPiece> pieces = new HashMap<>();
+
+        pieces.put("Knight", ChessPiece.Knight);
+        pieces.put("King", ChessPiece.King);
+        pieces.put("Bishop", ChessPiece.Bishop);
+        pieces.put("Pawn", ChessPiece.Pawn);
+        pieces.put("Queen", ChessPiece.Queen);
+        pieces.put("Rook", ChessPiece.Rook);
+
+        StringBuilder output = new StringBuilder();
+        
+        int phoneNumberDigits = 7;
+
+        output.append("Number of valid ").append(phoneNumberDigits).append("-digit phone numbers").append("\n");
+
+        // traverse pieces map
+        for (Map.Entry<String, ChessPiece> piece : pieces.entrySet()) {
+            BigInteger[] results = countPhoneNumbers(chessPiecesMoveMap.get(piece.getValue()), phoneNumberDigits);
+
+            BigInteger total = BigInteger.ZERO;
+
+            for (int i = 0; i < results.length; i++) {
+                total = total.add(results[i]);
+            }
+            output.append(piece.getKey()).append(": ").append(total).append("\n");
+        }
+
+        System.out.println(output);
+
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("count_for_each_pieces.txt"))) {
             writer.write(output.toString());
             System.out.println("Output successfully written to count_for_each_pieces.txt");

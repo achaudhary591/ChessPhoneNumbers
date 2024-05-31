@@ -1,6 +1,7 @@
-Bishop: 1442
-King: 53092
-Queen: 359276
-Knight: 544
+Number of valid 7-digit phone numbers
+Bishop: 308
+King: 14556
+Queen: 42570
+Knight: 136
 Pawn: 0
-Rook: 23302
+Rook: 4516
